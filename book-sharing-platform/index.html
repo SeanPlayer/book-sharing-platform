@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>校园图书共享系统</title>
+    <style>
+        /* 基础样式 */
+        body { font-family: Arial; max-width: 800px; margin: 0 auto; padding: 20px; }
+        .search-box { width: 100%; padding: 10px; margin: 20px 0; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+    </style>
+</head>
+<body>
+    <!-- 登录按钮 -->
+    <button id="loginBtn" style="float:right">登录</button>
+    
+    <!-- 搜索框 -->
+    <input type="text" class="search-box" placeholder="输入书名或ISBN..." id="searchInput">
+    
+    <!-- 图书列表 -->
+    <table id="bookTable">
+        <thead>
+            <tr><th>书名</th><th>ISBN</th><th>状态</th></tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+
+    <!-- 引入Supabase SDK -->
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <script>
+        // 初始化Supabase
+        const supabaseUrl = 'https://xxx.supabase.co';
+        const supabaseKey = 'your-api-key';
+        const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+
+        // 搜索功能
+        document.getElementById('searchInput').addEventListener('input', async (e) => {
+            const searchTerm = e.target.value;
+            const { data, error } = await supabase
+                .from('books')
+                .select('title, isbn, status')
+                .or(`title.ilike.%${searchTerm}%, isbn.eq.${searchTerm}`);
+
+            if (data) {
+                const tbody = document.querySelector('#bookTable tbody');
+                tbody.innerHTML = data.map(book => `
+                    <tr>
+                        <td>${book.title}</td>
+                        <td>${book.isbn}</td>
+                        <td>${book.status === 'available' ? '可借阅' : '已借出'}</td>
+                    </tr>
+                `).join('');
+            }
+        });
+
+        // 登录跳转
+        document.getElementById('loginBtn').addEventListener('click', () => {
+            window.location.href = 'login.html';
+        });
+    </script>
+</body>
+</html>
